@@ -36,11 +36,11 @@ public class MainActivity extends AppCompatActivity {
      * Set and initialize the view elements.
      */
     private void initializeView() {
-        findViewById(R.id.notify_me).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.bt_show).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startService(new Intent(MainActivity.this, ChatHeadService.class));
-                finish();
+                moveTaskToBack(true);
             }
         });
     }

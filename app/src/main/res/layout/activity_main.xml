@@ -11,10 +11,10 @@
     tools:context="com.example.chatheads.MainActivity">
 
     <Button
-        android:id="@+id/notify_me"
+        android:id="@+id/bt_show"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:gravity="center"
-        android:text="Create chat head"/>
+        android:text="Show image"/>
 </RelativeLayout>

@@ -59,6 +59,9 @@ public class ChatHeadService extends Service {
             public void onClick(View v) {
                 //close the service and remove the chat head from the window
                 stopSelf();
+                Intent intent = new Intent(ChatHeadService.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             }
         });
 
@@ -92,12 +95,9 @@ public class ChatHeadService extends Service {
                         //to identify if the user clicked the view or not.
                         if (lastAction == MotionEvent.ACTION_DOWN) {
                             //Open the chat conversation click.
-                            Intent intent = new Intent(ChatHeadService.this, ChatActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
 
                             //close the service and remove the chat heads
-                            stopSelf();
+//                            stopSelf();
                         }
                         lastAction = event.getAction();
                         return true;

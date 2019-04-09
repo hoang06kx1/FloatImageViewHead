@@ -32,11 +32,27 @@
             tools:ignore="ContentDescription" />
     </RelativeLayout>
 
-    <com.github.chrisbanes.photoview.PhotoView
-        android:background="@drawable/bg_photoview"
-        android:id="@+id/photo_view"
+    <RelativeLayout
         android:layout_width="330dp"
         android:layout_height="250dp"
         android:layout_toRightOf="@id/rl_chat_head"
-        android:src="@drawable/ic_android_circle" />
+        android:background="@drawable/bg_photoview"
+        android:padding="1dp">
+
+        <ProgressBar
+            android:layout_centerInParent="true"
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:indeterminate="true" />
+
+        <com.github.chrisbanes.photoview.PhotoView
+            android:id="@+id/photo_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    </RelativeLayout>
 </RelativeLayout>
