@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="65dp"
     android:id="@+id/chat_head_root"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <!--Profile image for the chat head.-->
-    <ImageView
-        android:id="@+id/chat_head_profile_iv"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/ic_android_circle"
-        tools:ignore="ContentDescription"/>
 
-    <!--Close button-->
-    <ImageView
-        android:id="@+id/close_btn"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
-        android:layout_marginLeft="40dp"
-        android:src="@drawable/ic_close"
-        tools:ignore="ContentDescription"/>
+    <RelativeLayout
+        android:id="@+id/rl_chat_head"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true">
+
+        <ImageView
+            android:id="@+id/chat_head_profile_iv"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_android_circle"
+            tools:ignore="ContentDescription" />
+
+        <!--Close button-->
+        <ImageView
+            android:id="@+id/close_btn"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginLeft="40dp"
+            android:src="@drawable/ic_close"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
 
     <com.github.chrisbanes.photoview.PhotoView
-        android:layout_toRightOf="@id/chat_head_profile_iv"
+        android:background="@drawable/bg_photoview"
         android:id="@+id/photo_view"
         android:layout_width="330dp"
         android:layout_height="250dp"
-        android:src="@drawable/ic_android_circle"/>
+        android:layout_toRightOf="@id/rl_chat_head"
+        android:src="@drawable/ic_android_circle" />
 </RelativeLayout>

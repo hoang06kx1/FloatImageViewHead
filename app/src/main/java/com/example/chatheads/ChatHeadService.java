@@ -11,6 +11,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.github.chrisbanes.photoview.PhotoView;
+
 public class ChatHeadService extends Service {
 
     private WindowManager mWindowManager;
@@ -49,6 +52,8 @@ public class ChatHeadService extends Service {
 
         //Set the close button.
         ImageView closeButton = (ImageView) mChatHeadView.findViewById(R.id.close_btn);
+        PhotoView photoView = (PhotoView) mChatHeadView.findViewById(R.id.photo_view);
+        Glide.with(this).load("https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940").into(photoView);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
