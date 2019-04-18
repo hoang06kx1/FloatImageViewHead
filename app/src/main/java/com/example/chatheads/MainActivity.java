@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
+    static final String LINK_ONE = "https://techcrunch.com/wp-content/uploads/2019/01/google-paying-users.jpg?w=1390&crop=1";
+    static final String LINK_TWO = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJ_GeCmfphA7YXcnKtsvdNPRuoVq1-bc8QrX-miPdTabH4SH4WqQ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +38,29 @@ public class MainActivity extends AppCompatActivity {
      * Set and initialize the view elements.
      */
     private void initializeView() {
-        findViewById(R.id.bt_show).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.bt_link_1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startService(new Intent(MainActivity.this, ChatHeadService.class));
-                moveTaskToBack(true);
+                loadImage(LINK_ONE);
             }
         });
+        findViewById(R.id.bt_link_2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadImage(LINK_TWO);
+            }
+        });
+    }
+
+    private void loadImage(String url) {
+        if (ChatHeadService.instance == null || ChatHeadService.instance.get() == null) {
+            Bundle bundle = new Bundle();
+            Intent i = new Intent(MainActivity.this, ChatHeadService.class);
+            i.putExtra("IMAGE_URL", url);
+            startService(i);
+        } else {
+            ChatHeadService.instance.get().loadImage(url);
+        }
     }
 
     @Override

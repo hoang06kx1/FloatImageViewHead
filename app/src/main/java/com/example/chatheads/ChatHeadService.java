@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.widget.CircularProgressDrawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,11 +16,16 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 
+import java.lang.ref.WeakReference;
+
 public class ChatHeadService extends Service {
 
-    private WindowManager mWindowManager;
-    private View mChatHeadView;
+    private WindowManager windowManager;
+    private View chatHeadView;
+    private PhotoView photoView;
+    private CircularProgressDrawable circularProgressDrawable;
 
+    public static WeakReference<ChatHeadService> instance;
     public ChatHeadService() {
     }
 
@@ -29,10 +35,18 @@ public class ChatHeadService extends Service {
     }
 
     @Override
+    public void onStart(Intent intent, int startId) {
+        super.onStart(intent, startId);
+        String url = intent.getStringExtra("IMAGE_URL");
+        loadImage(url);
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
+        instance = new WeakReference<>(this);
         //Inflate the chat head layout we created
-        mChatHeadView = LayoutInflater.from(this).inflate(R.layout.layout_chat_head, null);
+        chatHeadView = LayoutInflater.from(this).inflate(R.layout.layout_chat_head, null);
         int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -54,26 +68,29 @@ public class ChatHeadService extends Service {
         params.y = 100;
 
         //Add the view to the window
-        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mWindowManager.addView(mChatHeadView, params);
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager.addView(chatHeadView, params);
+
+        // init circular loading
+        circularProgressDrawable = new CircularProgressDrawable(this);
+        circularProgressDrawable.setStrokeWidth(5f);
+        circularProgressDrawable.setCenterRadius(30f);
+        circularProgressDrawable.start();
+
+        photoView = chatHeadView.findViewById(R.id.photo_view);
 
         //Set the close button.
-        ImageView closeButton = (ImageView) mChatHeadView.findViewById(R.id.close_btn);
-        PhotoView photoView = (PhotoView) mChatHeadView.findViewById(R.id.photo_view);
-        Glide.with(this).load("https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940").into(photoView);
+        ImageView closeButton = (ImageView) chatHeadView.findViewById(R.id.close_btn);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //close the service and remove the chat head from the window
                 stopSelf();
-                Intent intent = new Intent(ChatHeadService.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
             }
         });
 
         //Drag and move chat head using user's touch action.
-        final ImageView chatHeadImage = (ImageView) mChatHeadView.findViewById(R.id.chat_head_profile_iv);
+        final ImageView chatHeadImage = (ImageView) chatHeadView.findViewById(R.id.chat_head_profile_iv);
         chatHeadImage.setOnTouchListener(new View.OnTouchListener() {
             private int lastAction;
             private int initialX;
@@ -114,7 +131,7 @@ public class ChatHeadService extends Service {
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
 
                         //Update the layout with new X & Y coordinate
-                        mWindowManager.updateViewLayout(mChatHeadView, params);
+                        windowManager.updateViewLayout(chatHeadView, params);
                         lastAction = event.getAction();
                         return true;
                 }
@@ -123,9 +140,14 @@ public class ChatHeadService extends Service {
         });
     }
 
+    public void loadImage(String url) {
+        Glide.with(this).load(url).placeholder(circularProgressDrawable).into(photoView);
+    }
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mChatHeadView != null) mWindowManager.removeView(mChatHeadView);
+        if (chatHeadView != null) windowManager.removeView(chatHeadView);
     }
 }
