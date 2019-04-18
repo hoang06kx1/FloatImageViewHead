@@ -33,6 +33,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/rl_image_view"
         android:layout_width="330dp"
         android:layout_height="250dp"
         android:layout_toRightOf="@id/rl_chat_head"
@@ -55,5 +56,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
+
+        <ImageView
+            android:adjustViewBounds="true"
+            android:id="@+id/img_zoom"
+            android:src="@drawable/zoom_in"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"/>
     </RelativeLayout>
 </RelativeLayout>

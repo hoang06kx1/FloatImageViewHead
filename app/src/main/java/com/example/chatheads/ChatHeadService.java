@@ -5,14 +5,17 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CircularProgressDrawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 
@@ -21,11 +24,15 @@ import java.lang.ref.WeakReference;
 public class ChatHeadService extends Service {
 
     private WindowManager windowManager;
-    private View chatHeadView;
+    private View rootView;
     private PhotoView photoView;
     private CircularProgressDrawable circularProgressDrawable;
+    private View imageLayout;
+    static final double HW_RATE = 2.f / 3;
+    boolean isZoomed = false;
 
     public static WeakReference<ChatHeadService> instance;
+
     public ChatHeadService() {
     }
 
@@ -35,10 +42,10 @@ public class ChatHeadService extends Service {
     }
 
     @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
+    public int onStartCommand(Intent intent, int flags, int startId) {
         String url = intent.getStringExtra("IMAGE_URL");
         loadImage(url);
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -46,7 +53,21 @@ public class ChatHeadService extends Service {
         super.onCreate();
         instance = new WeakReference<>(this);
         //Inflate the chat head layout we created
-        chatHeadView = LayoutInflater.from(this).inflate(R.layout.layout_chat_head, null);
+        rootView = LayoutInflater.from(this).inflate(R.layout.layout_chat_head, null);
+        imageLayout = rootView.findViewById(R.id.rl_image_view);
+        setViewSize(imageLayout, ScreenUtils.getScreenWidth() / 2);
+
+        // set zoom button
+        final ImageView zoomButton = rootView.findViewById(R.id.img_zoom);
+        zoomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), isZoomed ? R.drawable.zoom_in : R.drawable.zoom_out));
+                setViewSize(imageLayout, isZoomed ? ScreenUtils.getScreenWidth() / 2 : (int) (ScreenUtils.getScreenWidth() * 2f / 3));
+                isZoomed = !isZoomed;
+            }
+        });
+
         int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -69,7 +90,7 @@ public class ChatHeadService extends Service {
 
         //Add the view to the window
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        windowManager.addView(chatHeadView, params);
+        windowManager.addView(rootView, params);
 
         // init circular loading
         circularProgressDrawable = new CircularProgressDrawable(this);
@@ -77,10 +98,10 @@ public class ChatHeadService extends Service {
         circularProgressDrawable.setCenterRadius(30f);
         circularProgressDrawable.start();
 
-        photoView = chatHeadView.findViewById(R.id.photo_view);
+        photoView = rootView.findViewById(R.id.photo_view);
 
         //Set the close button.
-        ImageView closeButton = (ImageView) chatHeadView.findViewById(R.id.close_btn);
+        ImageView closeButton = (ImageView) rootView.findViewById(R.id.close_btn);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +113,7 @@ public class ChatHeadService extends Service {
         });
 
         //Drag and move chat head using user's touch action.
-        final ImageView chatHeadImage = (ImageView) chatHeadView.findViewById(R.id.chat_head_profile_iv);
+        final ImageView chatHeadImage = (ImageView) rootView.findViewById(R.id.chat_head_profile_iv);
         chatHeadImage.setOnTouchListener(new View.OnTouchListener() {
             private int lastAction;
             private int initialX;
@@ -133,13 +154,20 @@ public class ChatHeadService extends Service {
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
 
                         //Update the layout with new X & Y coordinate
-                        windowManager.updateViewLayout(chatHeadView, params);
+                        windowManager.updateViewLayout(rootView, params);
                         lastAction = event.getAction();
                         return true;
                 }
                 return false;
             }
         });
+    }
+
+    private void setViewSize(View view, int width) {
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.width = width;
+        layoutParams.height = (int) (width * HW_RATE);
+        view.setLayoutParams(layoutParams);
     }
 
     public void loadImage(String url) {
@@ -150,6 +178,6 @@ public class ChatHeadService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (chatHeadView != null) windowManager.removeView(chatHeadView);
+        if (rootView != null) windowManager.removeView(rootView);
     }
 }
