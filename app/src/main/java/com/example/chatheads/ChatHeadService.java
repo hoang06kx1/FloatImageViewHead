@@ -85,6 +85,8 @@ public class ChatHeadService extends Service {
             @Override
             public void onClick(View v) {
                 //close the service and remove the chat head from the window
+                if (instance != null) instance.clear();
+                instance = null;
                 stopSelf();
             }
         });

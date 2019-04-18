@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadImage(String url) {
         if (ChatHeadService.instance == null || ChatHeadService.instance.get() == null) {
-            Bundle bundle = new Bundle();
             Intent i = new Intent(MainActivity.this, ChatHeadService.class);
             i.putExtra("IMAGE_URL", url);
             startService(i);
