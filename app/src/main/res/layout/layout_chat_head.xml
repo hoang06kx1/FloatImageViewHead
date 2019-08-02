@@ -9,6 +9,7 @@
     <!--Profile image for the chat head.-->
 
     <RelativeLayout
+        android:visibility="gone"
         android:id="@+id/rl_image_view"
         android:layout_width="330dp"
         android:layout_height="250dp"
