@@ -7,15 +7,22 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CircularProgressDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
+import com.blankj.utilcode.util.BarUtils;
+import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.ScreenUtils;
+import com.blankj.utilcode.util.SizeUtils;
+import com.blankj.utilcode.util.Utils;
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 
@@ -28,9 +35,10 @@ public class ChatHeadService extends Service {
     private PhotoView photoView;
     private CircularProgressDrawable circularProgressDrawable;
     private View imageLayout;
-    static final int DEFAULT_IMAGE_WIDTH = ScreenUtils.getScreenWidth() / 2;
-    static final int ZOOM_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 2f / 3);
+    static final int DEFAULT_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 3f / 4);
+    static final int ZOOM_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 5f / 6);
     static final double HW_RATE = 2.f / 3;
+    static final float CHATHEAD_BOTTOM_MARGIN = 60; // dp
     boolean isZoomed = false;
 
     public static WeakReference<ChatHeadService> instance;
@@ -95,7 +103,7 @@ public class ChatHeadService extends Service {
     }
 
     private void addChatHeadToWindow() {
-        int LAYOUT_FLAG;
+        final int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
@@ -104,8 +112,8 @@ public class ChatHeadService extends Service {
 
         //Add the view to the window.
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
@@ -113,13 +121,26 @@ public class ChatHeadService extends Service {
         //Specify the chat head position
         params.gravity = Gravity.TOP | Gravity.LEFT;        //Initially view will be added to top-left corner
         params.x = 0;
-        params.y = 100;
+        params.y = 0;
 
         //Add the view to the window
+        final RelativeLayout chatHeadImage = (RelativeLayout) rootView.findViewById(R.id.rl_chat_head);
+        chatHeadImage.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                chatHeadImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                Log.d("Chat head", "chat head image on view tree height: " + chatHeadImage.getMeasuredHeight() + " " + chatHeadImage.getHeight());
+                chatHeadImage.getHeight(); //height is ready
+            }
+        });
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.addView(rootView, params);
+        final RelativeLayout.LayoutParams chatHeadParams = (RelativeLayout.LayoutParams) chatHeadImage.getLayoutParams();
+        int limitTopMargin = ScreenUtils.getScreenHeight() - BarUtils.getNavBarHeight()- BarUtils.getStatusBarHeight() - SizeUtils.getMeasuredHeight(chatHeadImage);
+        chatHeadParams.topMargin =  limitTopMargin - (ConvertUtils.dp2px(CHATHEAD_BOTTOM_MARGIN));
+        chatHeadParams.leftMargin = ScreenUtils.getScreenWidth() / 2 - SizeUtils.getMeasuredWidth(chatHeadImage)/2;
+        chatHeadImage.setLayoutParams(chatHeadParams);
         //Drag and move chat head using user's touch action.
-        final ImageView chatHeadImage = (ImageView) rootView.findViewById(R.id.chat_head_profile_iv);
         chatHeadImage.setOnTouchListener(new View.OnTouchListener() {
             private int lastAction;
             private int initialX;
@@ -133,8 +154,8 @@ public class ChatHeadService extends Service {
                     case MotionEvent.ACTION_DOWN:
 
                         //remember the initial position.
-                        initialX = params.x;
-                        initialY = params.y;
+                        initialX = chatHeadParams.leftMargin;
+                        initialY = chatHeadParams.topMargin;
 
                         //get the touch location
                         initialTouchX = event.getRawX();
@@ -156,14 +177,17 @@ public class ChatHeadService extends Service {
                         return true;
                     case MotionEvent.ACTION_MOVE:
                         //Calculate the X and Y coordinates of the view.
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-
+                        chatHeadParams.leftMargin = initialX + (int) (event.getRawX() - initialTouchX);
+                        chatHeadParams.topMargin = initialY + (int) (event.getRawY() - initialTouchY);
+                        Log.d("Chathead", "Left margin:" + chatHeadParams.leftMargin);
+                        Log.d("Chathead", "Top margin:" + chatHeadParams.topMargin);
                         //Update the layout with new X & Y coordinate
-                        windowManager.updateViewLayout(rootView, params);
+//                        windowManager.updateViewLayout(rootView, params);
+                        chatHeadImage.setLayoutParams(chatHeadParams);
                         lastAction = event.getAction();
                         return true;
                 }
+                rootView.invalidate();
                 return false;
             }
         });

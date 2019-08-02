@@ -2,41 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chat_head_root"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical">
 
     <!--Profile image for the chat head.-->
 
     <RelativeLayout
-        android:id="@+id/rl_chat_head"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true">
-
-        <ImageView
-            android:id="@+id/chat_head_profile_iv"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="8dp"
-            android:src="@drawable/ic_android_circle"
-            tools:ignore="ContentDescription" />
-
-        <!--Close button-->
-        <ImageView
-            android:id="@+id/close_btn"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
-            android:layout_marginLeft="40dp"
-            android:src="@drawable/ic_close"
-            tools:ignore="ContentDescription" />
-    </RelativeLayout>
-
-    <RelativeLayout
         android:id="@+id/rl_image_view"
         android:layout_width="330dp"
         android:layout_height="250dp"
-        android:layout_toRightOf="@id/rl_chat_head"
         android:background="@drawable/bg_photoview"
         android:padding="1dp">
 
@@ -65,5 +40,29 @@
             android:layout_height="36dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_chat_head"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/chat_head_profile_iv"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_android_circle"
+            tools:ignore="ContentDescription" />
+
+        <!--Close button-->
+        <ImageView
+            android:visibility="visible"
+            android:id="@+id/close_btn"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginLeft="40dp"
+            android:src="@drawable/ic_close"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 </RelativeLayout>

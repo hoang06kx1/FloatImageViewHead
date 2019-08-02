@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
         } else {
-            initializeView();
+//            initializeView();
+            loadImage(LINK_ONE);
         }
     }
 
