@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layout_root"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
@@ -34,8 +34,10 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:clickable="true"
+        android:focusable="true"
         android:id="@+id/rl_image"
-        android:layout_width="330dp"
+        android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_toRightOf="@id/rl_chat_head"
         android:background="@drawable/bg_photoview"
@@ -53,6 +55,7 @@
             android:indeterminate="true" />
 
         <com.github.chrisbanes.photoview.PhotoView
+            android:scaleType="centerCrop"
             android:id="@+id/pv_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

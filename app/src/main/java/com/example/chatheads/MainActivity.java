@@ -40,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
      * Set and initialize the view elements.
      */
     private void initializeView() {
+        findViewById(R.id.bt_link_2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                loadImage(LINK_TWO);
+            }
+        });
         loadImage(LINK_ONE);
     }
 

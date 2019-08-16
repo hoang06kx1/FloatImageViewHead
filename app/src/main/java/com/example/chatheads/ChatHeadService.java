@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CircularProgressDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 
 import com.blankj.utilcode.util.ScreenUtils;
 import com.bumptech.glide.Glide;
+import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import java.lang.ref.WeakReference;
@@ -29,8 +31,8 @@ public class ChatHeadService extends Service {
     private CircularProgressDrawable circularProgressDrawable;
     private View imageLayout;
     private View chatHead;
-    static final int DEFAULT_IMAGE_WIDTH = ScreenUtils.getScreenWidth() / 2;
-    static final int ZOOM_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 2f / 3);
+    static final int DEFAULT_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 2f / 3);
+    static final int ZOOM_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 4f / 5);
     static final double HW_RATE = 2.f / 3;
     boolean isZoomed = false;
 
@@ -69,19 +71,11 @@ public class ChatHeadService extends Service {
         chatHead = rootView.findViewById(R.id.rl_chat_head);
 
         // toggle on/off
-        imageLayout.setOnClickListener(new View.OnClickListener() {
+        photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
             @Override
-            public void onClick(View v) {
+            public void onPhotoTap(ImageView view, float x, float y) {
                 imageLayout.setVisibility(View.GONE);
                 chatHead.setVisibility(View.VISIBLE);
-            }
-        });
-
-        chatHead.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                imageLayout.setVisibility(View.VISIBLE);
-                chatHead.setVisibility(View.GONE);
             }
         });
 
@@ -91,8 +85,9 @@ public class ChatHeadService extends Service {
             @Override
             public void onClick(View v) {
                 zoomButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), isZoomed ? R.drawable.zoom_in : R.drawable.zoom_out));
-                setViewSize(imageLayout, isZoomed ? DEFAULT_IMAGE_WIDTH : ZOOM_IMAGE_WIDTH);
                 isZoomed = !isZoomed;
+                Log.d("ZOOM", "Zoom: " + ZOOM_IMAGE_WIDTH + " Default: " + DEFAULT_IMAGE_WIDTH);
+                setViewSize(imageLayout, isZoomed ? ZOOM_IMAGE_WIDTH : DEFAULT_IMAGE_WIDTH);
             }
         });
 
@@ -166,10 +161,8 @@ public class ChatHeadService extends Service {
                         //we have to check if the previous action was ACTION_DOWN
                         //to identify if the user clicked the view or not.
                         if (lastAction == MotionEvent.ACTION_DOWN) {
-                            //Open the chat conversation click.
-
-                            //close the service and remove the chat heads
-//                            stopSelf();
+                            imageLayout.setVisibility(View.VISIBLE);
+                            chatHead.setVisibility(View.GONE);
                         }
                         lastAction = event.getAction();
                         return true;
