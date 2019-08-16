@@ -1,5 +1,6 @@
 package com.example.chatheads;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -39,18 +40,7 @@ public class MainActivity extends AppCompatActivity {
      * Set and initialize the view elements.
      */
     private void initializeView() {
-        findViewById(R.id.bt_link_1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                loadImage(LINK_ONE);
-            }
-        });
-        findViewById(R.id.bt_link_2).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadImage(LINK_TWO);
-            }
-        });
+        loadImage(LINK_ONE);
     }
 
     private void loadImage(String url) {
@@ -63,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION) {

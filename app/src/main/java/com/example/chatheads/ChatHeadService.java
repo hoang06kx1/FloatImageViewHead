@@ -7,22 +7,15 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CircularProgressDrawable;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
-import com.blankj.utilcode.util.BarUtils;
-import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.ScreenUtils;
-import com.blankj.utilcode.util.SizeUtils;
-import com.blankj.utilcode.util.Utils;
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 
@@ -33,12 +26,12 @@ public class ChatHeadService extends Service {
     private WindowManager windowManager;
     private View rootView;
     private PhotoView photoView;
-    private View photoViewLayout;
     private CircularProgressDrawable circularProgressDrawable;
-    static final int DEFAULT_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 5f / 6);
-    static final int ZOOM_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 9f / 10);
+    private View imageLayout;
+    private View chatHead;
+    static final int DEFAULT_IMAGE_WIDTH = ScreenUtils.getScreenWidth() / 2;
+    static final int ZOOM_IMAGE_WIDTH = (int) (ScreenUtils.getScreenWidth() * 2f / 3);
     static final double HW_RATE = 2.f / 3;
-    static final float CHATHEAD_BOTTOM_MARGIN = 60; // dp
     boolean isZoomed = false;
 
     public static WeakReference<ChatHeadService> instance;
@@ -71,8 +64,26 @@ public class ChatHeadService extends Service {
 
         //Inflate the chat head layout we created
         rootView = LayoutInflater.from(this).inflate(R.layout.layout_chat_head, null);
-        photoView = rootView.findViewById(R.id.photo_view);
-        photoViewLayout = rootView.findViewById(R.id.rl_image_view);
+        photoView = rootView.findViewById(R.id.pv_image);
+        imageLayout = rootView.findViewById(R.id.rl_image);
+        chatHead = rootView.findViewById(R.id.rl_chat_head);
+
+        // toggle on/off
+        imageLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageLayout.setVisibility(View.GONE);
+                chatHead.setVisibility(View.VISIBLE);
+            }
+        });
+
+        chatHead.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageLayout.setVisibility(View.VISIBLE);
+                chatHead.setVisibility(View.GONE);
+            }
+        });
 
         // set zoom button
         final ImageView zoomButton = rootView.findViewById(R.id.img_zoom);
@@ -80,13 +91,13 @@ public class ChatHeadService extends Service {
             @Override
             public void onClick(View v) {
                 zoomButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), isZoomed ? R.drawable.zoom_in : R.drawable.zoom_out));
-                setViewSize(photoViewLayout, isZoomed ? DEFAULT_IMAGE_WIDTH : ZOOM_IMAGE_WIDTH);
+                setViewSize(imageLayout, isZoomed ? DEFAULT_IMAGE_WIDTH : ZOOM_IMAGE_WIDTH);
                 isZoomed = !isZoomed;
             }
         });
 
         //Set the close button.
-        ImageView closeButton = (ImageView) rootView.findViewById(R.id.close_btn);
+        ImageView closeButton = (ImageView) rootView.findViewById(R.id.btn_close);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,12 +109,12 @@ public class ChatHeadService extends Service {
         });
 
         // render image with predefined size
-        setViewSize(photoViewLayout, DEFAULT_IMAGE_WIDTH);
+        setViewSize(imageLayout, DEFAULT_IMAGE_WIDTH);
         addChatHeadToWindow();
     }
 
     private void addChatHeadToWindow() {
-        final int LAYOUT_FLAG;
+        int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
@@ -112,8 +123,8 @@ public class ChatHeadService extends Service {
 
         //Add the view to the window.
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
@@ -121,27 +132,13 @@ public class ChatHeadService extends Service {
         //Specify the chat head position
         params.gravity = Gravity.TOP | Gravity.LEFT;        //Initially view will be added to top-left corner
         params.x = 0;
-        params.y = 0;
+        params.y = 100;
 
         //Add the view to the window
-        final RelativeLayout chatHeadImage = (RelativeLayout) rootView.findViewById(R.id.rl_chat_head);
-        chatHeadImage.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                chatHeadImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                Log.d("Chat head", "chat head image on view tree height: " + chatHeadImage.getMeasuredHeight() + " " + chatHeadImage.getHeight());
-                chatHeadImage.getHeight(); //height is ready
-            }
-        });
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.addView(rootView, params);
-        final RelativeLayout.LayoutParams chatHeadParams = (RelativeLayout.LayoutParams) chatHeadImage.getLayoutParams();
-        final int limitTopMargin = ScreenUtils.getScreenHeight() - BarUtils.getNavBarHeight()- BarUtils.getStatusBarHeight() - SizeUtils.getMeasuredHeight(chatHeadImage);
-        final int limitLeftMargin = ScreenUtils.getScreenWidth() - SizeUtils.getMeasuredWidth(chatHeadImage);
-        chatHeadParams.topMargin =  limitTopMargin - (ConvertUtils.dp2px(CHATHEAD_BOTTOM_MARGIN));
-        chatHeadParams.leftMargin = ScreenUtils.getScreenWidth()/2 - SizeUtils.getMeasuredWidth(chatHeadImage)/2;
-        chatHeadImage.setLayoutParams(chatHeadParams);
         //Drag and move chat head using user's touch action.
+        final ImageView chatHeadImage = (ImageView) rootView.findViewById(R.id.iv_chat_head);
         chatHeadImage.setOnTouchListener(new View.OnTouchListener() {
             private int lastAction;
             private int initialX;
@@ -155,8 +152,8 @@ public class ChatHeadService extends Service {
                     case MotionEvent.ACTION_DOWN:
 
                         //remember the initial position.
-                        initialX = chatHeadParams.leftMargin;
-                        initialY = chatHeadParams.topMargin;
+                        initialX = params.x;
+                        initialY = params.y;
 
                         //get the touch location
                         initialTouchX = event.getRawX();
@@ -169,29 +166,23 @@ public class ChatHeadService extends Service {
                         //we have to check if the previous action was ACTION_DOWN
                         //to identify if the user clicked the view or not.
                         if (lastAction == MotionEvent.ACTION_DOWN) {
-                            photoViewLayout.setVisibility(photoViewLayout.getVisibility() == View.GONE? View.VISIBLE: View.GONE);
+                            //Open the chat conversation click.
+
+                            //close the service and remove the chat heads
+//                            stopSelf();
                         }
                         lastAction = event.getAction();
                         return true;
                     case MotionEvent.ACTION_MOVE:
                         //Calculate the X and Y coordinates of the view.
-                        int nextleftMargin = initialX + (int) (event.getRawX() - initialTouchX);
-                        if (nextleftMargin < limitLeftMargin && nextleftMargin > 0) {
-                            chatHeadParams.leftMargin = nextleftMargin;
-                        }
-                        int nextTopMargin = initialY + (int) (event.getRawY() - initialTouchY);
-                        if (nextTopMargin < limitTopMargin && nextTopMargin > 0) {
-                            chatHeadParams.topMargin = nextTopMargin;
-                        }
-                        Log.d("Chathead", "Left margin:" + chatHeadParams.leftMargin);
-                        Log.d("Chathead", "Top margin:" + chatHeadParams.topMargin);
+                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
+                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+
                         //Update the layout with new X & Y coordinate
-//                        windowManager.updateViewLayout(rootView, params);
-                        chatHeadImage.setLayoutParams(chatHeadParams);
+                        windowManager.updateViewLayout(rootView, params);
                         lastAction = event.getAction();
                         return true;
                 }
-                rootView.invalidate();
                 return false;
             }
         });

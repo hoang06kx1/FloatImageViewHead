@@ -7,22 +7,4 @@
     android:padding="48dp"
     tools:context="com.example.chatheads.MainActivity">
 
-    <Button
-        android:visibility="gone"
-        android:id="@+id/bt_link_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:gravity="center"
-        android:text="Load link 1"/>
-
-    <Button
-        android:visibility="gone"
-        android:id="@+id/bt_link_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:layout_alignParentRight="true"
-        android:text="Load link 2"/>
 </RelativeLayout>
